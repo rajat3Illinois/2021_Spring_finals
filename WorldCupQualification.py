@@ -45,6 +45,7 @@ class Players:
     @staticmethod
     def team_player_details(details: pd.DataFrame) -> pd.DataFrame:
         """
+        It details the team and its player.
 
         :param details:
         :return:
