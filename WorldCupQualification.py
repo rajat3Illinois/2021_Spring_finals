@@ -54,10 +54,11 @@ class Team:
         min_rank = player_team_merged_frame.min()['Rank']
         player_team_merged_frame['Normalize_Rank'] = (max_rank - player_team_merged_frame['Rank']) / \
                                                      (max_rank - min_rank)
-
-
-
-
+        player_team_merged_frame['Above_Median_Count'] = player_team_merged_frame['count'] / 2
+        player_team_merged_frame['Above_Median_Count'] = player_team_merged_frame['Above_Median_Count'].astype("int32")
+        teams_qualified = player_team_merged_frame.loc[(player_team_merged_frame['Normalize_Rank'].gt(0.4)) &
+                                                  ((player_team_merged_frame['Squad_Size'] * 1.5) < player_team_merged_frame[
+                                                      'Above_Median_Count'])]
 
 
 class Players:
