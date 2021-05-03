@@ -5,14 +5,14 @@ This code is developed by Rajat Kumar (rajat3@illinois.edu)
 
 """
 
-import numpy as np
 import pandas as pd
 import random
 
 
 def remove_regex_from_total_value(team_merged_frame: pd.DataFrame) -> pd.DataFrame:
     """
-
+    It converts the total value depicting the dollars amount from str to int, by removing the characters
+    $, m, bn and Th.
     :param team_merged_frame:
     :return:
     """
@@ -24,14 +24,15 @@ def remove_regex_from_total_value(team_merged_frame: pd.DataFrame) -> pd.DataFra
     return team_merged_frame
 
 
-def host_nation_df() -> pd.DataFrame:
+def host_nation_df(host: str) -> pd.DataFrame:
     """
-
+    This provides the details of the host nation that is Qatar right now.
+    :param host:
     :return:
     """
     overall_rankings = pd.read_csv("Latest_Rankings.csv")
     grouped_players_df = players_df.groupby('nationality')['overall'].agg(['median', 'count'])
-    host_nation = overall_rankings[overall_rankings['Nation'] == 'Qatar']
+    host_nation = overall_rankings[overall_rankings['Nation'] == host]
     host_team_details = pd.merge(host_nation, grouped_players_df, left_on='Nation', right_index=True,
                                  how='left').fillna(0)
     host_team_details['Normalize_Rank'] = 0
@@ -41,9 +42,9 @@ def host_nation_df() -> pd.DataFrame:
 
 def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confideration_type: str) -> pd.DataFrame:
     """
-
+    It returns the teams that are likely to qualify for the Fifa World Cup.
     :param player_team_merged_frame:
-    :param confideration_type:
+    :param confideration_type: (Type of confideration like AFC, Asia, North America)
     :return:
     """
 
@@ -66,16 +67,16 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
     elif confideration_type == "UEFA":
         remove_regex_from_total_value(player_team_merged_frame)
         higher_team_correct = player_team_merged_frame[player_team_merged_frame['Pots'].isin([1])
-                                                   & player_team_merged_frame['Normalize_Rank'].gt(0.4) &
-                                                   ((player_team_merged_frame['Squad_Size'] * 1.5) <
-                                                    player_team_merged_frame['Above_Median_Count']) &
-                                                   (player_team_merged_frame['Total Value'].gt(150))]
+                                                       & player_team_merged_frame['Normalize_Rank'].gt(0.4) &
+                                                       ((player_team_merged_frame['Squad_Size'] * 1.5) <
+                                                        player_team_merged_frame['Above_Median_Count']) &
+                                                       (player_team_merged_frame['Total Value'].gt(150))]
 
         higher_team_missing = player_team_merged_frame[player_team_merged_frame['Pots'].isin([1])
-                                                   & player_team_merged_frame['Normalize_Rank'].gt(0.4) &
-                                                   ((player_team_merged_frame['Squad_Size'] * 1.5) <
-                                                    player_team_merged_frame['Above_Median_Count']) &
-                                                   (player_team_merged_frame['Total Value'].lt(1.5))]
+                                                       & player_team_merged_frame['Normalize_Rank'].gt(0.4) &
+                                                       ((player_team_merged_frame['Squad_Size'] * 1.5) <
+                                                        player_team_merged_frame['Above_Median_Count']) &
+                                                       (player_team_merged_frame['Total Value'].lt(1.5))]
         higher_frames = [higher_team_correct, higher_team_missing]
         teams_qualified = pd.concat(higher_frames)
 
@@ -84,8 +85,6 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
                                                              ((player_team_merged_frame['Squad_Size'] * 1.5) <
                                                               player_team_merged_frame['Above_Median_Count']) &
                                                              (player_team_merged_frame['Total Value'].gt(150))]
-
-        different_teams_qualified = different_teams_qualified.sample(4)
 
     else:
         teams_qualified = player_team_merged_frame.loc[(player_team_merged_frame['Normalize_Rank'].gt(0.4)) &
@@ -112,17 +111,31 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
 
 def fetch_team_details(team: pd.DataFrame) -> pd.DataFrame:
     """
-
+    It merges the particular confideration (like AFC, Asia) team dataframe with the Latest Rankings dataframe.
     :param team:
     :return:
     """
     team_details = pd.merge(team, team_rankings, left_on='Nation', right_index=True, how='left')
-    return Players.team_player_details(team_details)
+    return team_player_details(team_details)
+
+
+def team_player_details(details: pd.DataFrame) -> pd.DataFrame:
+    """
+    It provides the player statistics belonging to the qualifying team as per the players_20 data file.
+
+    :param details:
+    :return:
+    """
+    grouped_players_df = players_df.groupby('nationality')['overall'].agg(['mean', 'count'])
+    team_player_details = pd.merge(details, grouped_players_df, left_on='Nation',
+                                   right_index=True, how='left').fillna(0)
+    return team_player_details
 
 
 def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, players_details_df: pd.DataFrame) -> pd.DataFrame:
     """
-
+    It computes the qualifying team attack stats based on the LW,RW,ST,CAM players in the players_20.csv file.
+    It also computes the qualifying team defence stats based on CDM, CB
     :param officially_qualified_teams:
     :param players_details_df:
     :return:
@@ -183,7 +196,7 @@ class WorldCupTeam:
     @staticmethod
     def create_team_instances(team_details_df):
         """
-
+        It creates the team object instances for all the qualifying teams.
         :param team_details_df:
         :return:
         """
@@ -199,22 +212,7 @@ class WorldCupTeam:
             team_count += 1
 
 
-class Players:
-
-    @staticmethod
-    def team_player_details(details: pd.DataFrame) -> pd.DataFrame:
-        """
-        It details the team and its player.
-
-        :param details:
-        :return:
-        """
-        grouped_players_df = players_df.groupby('nationality')['overall'].agg(['mean', 'count'])
-        team_player_details = pd.merge(details, grouped_players_df, left_on='Nation',
-                                       right_index=True, how='left').fillna(0)
-        return team_player_details
-
-
+# Below code is yet to be implemented.
 class MatchResult:
 
     def __init__(self, winning_chance):
@@ -223,12 +221,12 @@ class MatchResult:
 
 def fetch_details_for_simulating_groups() -> pd.DataFrame:
     """
-
+    It is main function that returns all the qualifying teams along with its statistics of attacking prowess,
+    defensive prowess, rank and confideration.
     :return:
     """
 
     africa_teams = pd.read_csv("AFC.csv")
-    # players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     afc_team_data = world_cup_qualified_teams(fetch_team_details(africa_teams), "AFC")
 
     asia_teams = pd.read_csv("Asia.csv")
@@ -246,7 +244,7 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
     europe_teams = pd.read_csv("UEFA.csv")
     uefa_team_data = world_cup_qualified_teams(fetch_team_details(europe_teams), "UEFA")
 
-    host_team_data = host_nation_df()
+    host_team_data = host_nation_df(host_nation_country)
 
     qualified_frames = [afc_team_data, asia_team_data, north_america_team_data,
                         south_america_team_data, oceania_team_data,
@@ -258,7 +256,8 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
 
 def simulate_groups(simulations: int):
     """
-
+    This is main simulation function that assigns the groups to its appropriate pots and then randomly
+    assign each team to the group.
     :param simulations:
     :return:
     """
@@ -361,14 +360,15 @@ def simulate_groups(simulations: int):
         for each_team in groupH:
             print(each_team.Name)
 
-    print("Success Ratio of France is {}".format(winner_count/simulations * 100))
+    print("Success Ratio of Last Winner (that is France) is {}".format(winner_count/simulations * 100))
 
 
 if __name__ == '__main__':
 
     qualified_teams = []
+    host_nation_country = 'Qatar'
     confideration = {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(1000)
+    simulate_groups(50)
