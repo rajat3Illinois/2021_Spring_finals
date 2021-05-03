@@ -37,6 +37,7 @@ Final
 Purpose:- 
 
 With this Project, I aim to enhance the previous developed World Cup 2018 simulation from the Programming Analytics Spring 2018 students and making an enhanced simulation for the World Cup 2022. (Type III analysis)
+
 Previous Project Link: - https://github.com/hiralrayani/World-Cup-Simulator.git
 
 Loopholes in Previous Project:- 
@@ -58,6 +59,11 @@ Fifa 20 Players:  https://www.kaggle.com/stefanoleone992/fifa-20-complete-player
 
 Latest FIFA Ranking: https://www.fifa.com/fifa-world-ranking/ranking-table/men/ 
                                     https://www.transfermarkt.us/statistik/weltrangliste
+
+Execution:- 
+
+Execute the WorlCupQualification.py file. Make sure all the data files are in the same directory as the python file.
+
 
 Referneces
 

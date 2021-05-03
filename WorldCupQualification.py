@@ -1,6 +1,9 @@
 """
 
 This code is developed by Rajat Kumar (rajat3@illinois.edu)
+The detailed description is present in the readme file. The project belongs to the category of Type 3 analysis.
+Change the simulations in the main part of python. Currently, it is set as 50.
+Make sure all the data sets file are in the same directory as this python file
 
 
 """
