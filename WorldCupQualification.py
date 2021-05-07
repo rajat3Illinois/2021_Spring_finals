@@ -14,7 +14,7 @@ import random
 
 def remove_regex_from_total_value(team_merged_frame: pd.DataFrame) -> pd.DataFrame:
     """
-    It converts the total value depicting the dollars amount from str to int, by removing the characters
+    It converts the total value depicting the dollars amount from str to float, by removing the characters
     $, m, bn and Th.
     :param team_merged_frame:
     :return:
@@ -154,6 +154,8 @@ def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, p
     final_grouped_players_df['CDM'] = final_grouped_players_df['CDM'].fillna(0)
     final_grouped_players_df['CB'] = players_details_df.loc[players_details_df.team_position == 'CB'].groupby('nationality')['overall'].agg(['mean'])
     final_grouped_players_df['CB'] = final_grouped_players_df['CB'].fillna(0)
+    final_grouped_players_df['GK'] = players_df.loc[players_df.team_position == 'GK'].groupby('nationality')['overall'].agg(['mean'])
+    final_grouped_players_df['GK'] = final_grouped_players_df['GK'].fillna(0)
     final_grouped_players_df['Attacking_Prowess'] = (final_grouped_players_df['mean'] + final_grouped_players_df['LW'] +
                                                      final_grouped_players_df['ST'] + final_grouped_players_df[
                                                          'CAM']) / 4
@@ -175,6 +177,7 @@ class WorldCupTeam:
         self.Rank = team_details_df['Rank']
         self.Attacking_Strength = team_details_df['Attacking_Prowess']
         self.Defensive_Strength = team_details_df['Defensive_Prowess']
+        self.Goalkeeper_Strength = team_details_df['GK']
         if self.Name == 'France':
             self.last_winner = True
         else:
