@@ -145,24 +145,22 @@ def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, p
     :param players_details_df:
     :return:
     """
-    final_grouped_players_df = players_details_df.loc[players_details_df.team_position == 'RW'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['LW'] = players_details_df.loc[players_details_df.team_position == 'LW'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['LW'] = final_grouped_players_df['LW'].fillna(0)
-    final_grouped_players_df['ST'] = players_details_df.loc[players_details_df.team_position == 'ST'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['ST'] = final_grouped_players_df['ST'].fillna(0)
-    final_grouped_players_df['CAM'] = players_details_df.loc[players_details_df.team_position == 'CAM'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['CAM'] = final_grouped_players_df['CAM'].fillna(0)
-    final_grouped_players_df['CDM'] = players_details_df.loc[players_details_df.team_position == 'CDM'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['CDM'] = final_grouped_players_df['CDM'].fillna(0)
-    final_grouped_players_df['CB'] = players_details_df.loc[players_details_df.team_position == 'CB'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['CB'] = final_grouped_players_df['CB'].fillna(0)
-    final_grouped_players_df['GK'] = players_df.loc[players_df.team_position == 'GK'].groupby('nationality')['overall'].agg(['mean'])
-    final_grouped_players_df['GK'] = final_grouped_players_df['GK'].fillna(0)
-    final_grouped_players_df['Attacking_Prowess'] = (final_grouped_players_df['mean'] + final_grouped_players_df['LW'] +
-                                                     final_grouped_players_df['ST'] + final_grouped_players_df[
-                                                         'CAM']) / 4
-    final_grouped_players_df['Defensive_Prowess'] = (final_grouped_players_df['CDM'] + final_grouped_players_df[
-        'CB'] + final_grouped_players_df['GK']) / 3
+    players_df.loc[players_df['player_positions'].str.contains('ST', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('LW', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('RW', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('CAM', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('CM', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('RM', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('LM', regex=False), 'player_positions'] = 'A'
+    players_df.loc[players_df['player_positions'].str.contains('CDM', regex=False), 'player_positions'] = 'D'
+    players_df.loc[players_df['player_positions'].str.contains('CB', regex=False), 'player_positions'] = 'D'
+    players_df.loc[players_df['player_positions'].str.contains('RB', regex=False), 'player_positions'] = 'D'
+    players_df.loc[players_df['player_positions'].str.contains('LB', regex=False), 'player_positions'] = 'D'
+    players_df.loc[players_df['player_positions'].str.contains('GK', regex=False), 'player_positions'] = 'D'
+    players_df.fillna(0)
+
+    final_grouped_players_df = players_df.loc[players_df['player_positions'] == 'A'].groupby('nationality')['overall'].agg(['median'])
+    final_grouped_players_df['Defensive_Prowess'] = players_df.loc[players_df['player_positions'] == 'D'].groupby('nationality')['overall'].agg(['median'])
 
     officially_qualified_teams = pd.merge(officially_qualified_teams, final_grouped_players_df, left_on='Nation',
                                           right_index=True, how='left').fillna(0)
@@ -177,12 +175,17 @@ class WorldCupTeam:
         self.count = 0
         self.Name = team_details_df['Nation']
         self.Rank = team_details_df['Rank']
-        self.Attacking_Strength = team_details_df['Attacking_Prowess']
+        self.Above_Median = team_details_df['Above_Median_Count']
+        self.Rank_Points = team_details_df['Points']
+        self.Attacking_Strength = team_details_df['median_y']
         self.Defensive_Strength = team_details_df['Defensive_Prowess']
         self.points = 0
         self.won = 0
         self.lost = 0
         self.drawn = 0
+        self.goal_scored = 0
+        self.goal_against = 0
+        self.goal_difference = 0
 
         if self.Name == 'France':
             self.last_winner = True
@@ -198,10 +201,30 @@ class WorldCupTeam:
         else:
             self.pot = 4
 
+        if self.Attacking_Strength == 0.0:
+            if 20 <= self.Rank <= 30:
+                self.Attacking_Strength = random.randint(65, 67)
+            elif 31 <= self.Rank <= 50:
+                self.Attacking_Strength = random.randint(63, 65)
+            elif 51 <= self.Rank <= 70:
+                self.Attacking_Strength = random.randint(62, 64)
+            else:
+                self.Attacking_Strength = random.randint(60, 62)
+
+        if self.Defensive_Strength == 0.0:
+            if 20 <= self.Rank <= 30:
+                self.Defensive_Strength = random.randint(65, 67)
+            elif 31 <= self.Rank <= 50:
+                self.Defensive_Strength = random.randint(63, 65)
+            elif 51 <= self.Rank <= 70:
+                self.Defensive_Strength = random.randint(62, 64)
+            else:
+                self.Defensive_Strength = random.randint(60, 62)
+
         if self.Name == 'Qatar':
             self.pot = 1
-            self.Attacking_Strength = random.randint(60, 65)
-            self.Defensive_Strength = random.randint(62, 67)
+            self.Attacking_Strength = random.randint(63, 67)
+            self.Defensive_Strength = random.randint(63, 67)
 
         WorldCupTeam.world_cup_team_stats_list.append(self)
 
@@ -242,18 +265,18 @@ class MatchResult:
         """
         try:
             if self.host_factor != 0:
-                self.team1.scoring_power = self.team1.Attacking_Strength / self.team1.Defensive_Strength
-                self.team2.scoring_power = self.team2.Attacking_Strength / self.team2.Defensive_Strength
+                self.team1.scoring_power = (self.team1.Attacking_Strength / self.team2.Defensive_Strength) * (self.team1.Rank_Points / self.team2.Rank_Points)
+                self.team2.scoring_power = (self.team2.Attacking_Strength / self.team1.Defensive_Strength) * (self.team2.Rank_Points / self.team1.Rank_Points)
             else:
                 if self.team1.Name == host_nation_country:
-                    self.team1.scoring_power = (self.team1.Attacking_Strength / self.team1.Defensive_Strength) * self.host_factor
+                    self.team1.scoring_power = (self.team1.Attacking_Strength / self.team2.Defensive_Strength) * self.host_factor * (self.team1.Rank_Points / self.team2.Rank_Points)
                 else:
-                    self.team1.scoring_power = self.team1.Attacking_Strength / self.team1.Defensive_Strength
+                    self.team1.scoring_power = self.team1.Attacking_Strength / self.team2.Defensive_Strength * (self.team1.Rank_Points / self.team2.Rank_Points)
 
-                if self.team2.Name == host_nation_country:
-                    self.team2.scoring_power = (self.team2.Attacking_Strength / self.team2.Defensive_Strength) * self.host_factor
+                if self.team2.Name != host_nation_country:
+                    self.team2.scoring_power = self.team2.Attacking_Strength / self.team1.Defensive_Strength * (self.team2.Rank_Points / self.team1.Rank_Points)
                 else:
-                    self.team2.scoring_power = self.team2.Attacking_Strength / self.team2.Defensive_Strength
+                    self.team2.scoring_power = (self.team2.Attacking_Strength / self.team1.Defensive_Strength) * self.host_factor * (self.team2.Rank_Points / self.team1.Rank_Points)
 
             self.team1.goals_scored = np.random.poisson(self.team1.scoring_power)
             self.team2.goals_scored = np.random.poisson(self.team2.scoring_power)
@@ -271,6 +294,13 @@ class MatchResult:
                 self.team2.points += 1
                 self.team1.drawn += 1
                 self.team2.drawn += 1
+
+            self.team1.goal_scored += self.team1.goal_scored
+            self.team2.goal_scored += self.team2.goal_scored
+            self.team1.goal_against += self.team2.goal_scored
+            self.team2.goal_against += self.team1.goal_scored
+            self.team1.goal_difference += self.team1.goal_scored - self.team1.goal_against
+            self.team2.goal_difference += self.team2.goal_scored - self.team2.goal_against
 
             print("The score between {} and {} is {} - {}".format(self.team1.Name, self.team2.Name,
                                                                   self.team1.goals_scored,
@@ -455,16 +485,16 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_h = list(itertools.combinations(groupH, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_h)
 
-    print("Success Ratio of Last Winner (that is France) is {}".format(winner_count/simulations * 100))
+    print("\nThe chances of Last Winner (that is France) qualifying for the world cup is {}".format(winner_count/simulations * 100))
 
 
 if __name__ == '__main__':
 
     qualified_teams = []
     host_nation_country = 'Qatar'
-    host_nation_factor = 1.10
+    host_nation_factor = 1.15
     confideration = {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(50)
+    simulate_groups(10)
