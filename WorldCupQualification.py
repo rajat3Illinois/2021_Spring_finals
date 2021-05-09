@@ -9,7 +9,9 @@ Make sure all the data sets file are in the same directory as this python file
 """
 
 import pandas as pd
+import numpy as np
 import random
+import itertools
 
 
 def remove_regex_from_total_value(team_merged_frame: pd.DataFrame) -> pd.DataFrame:
@@ -160,7 +162,7 @@ def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, p
                                                      final_grouped_players_df['ST'] + final_grouped_players_df[
                                                          'CAM']) / 4
     final_grouped_players_df['Defensive_Prowess'] = (final_grouped_players_df['CDM'] + final_grouped_players_df[
-        'CB']) / 2
+        'CB'] + final_grouped_players_df['GK']) / 3
 
     officially_qualified_teams = pd.merge(officially_qualified_teams, final_grouped_players_df, left_on='Nation',
                                           right_index=True, how='left').fillna(0)
@@ -177,7 +179,11 @@ class WorldCupTeam:
         self.Rank = team_details_df['Rank']
         self.Attacking_Strength = team_details_df['Attacking_Prowess']
         self.Defensive_Strength = team_details_df['Defensive_Prowess']
-        self.Goalkeeper_Strength = team_details_df['GK']
+        self.points = 0
+        self.won = 0
+        self.lost = 0
+        self.drawn = 0
+
         if self.Name == 'France':
             self.last_winner = True
         else:
@@ -221,8 +227,67 @@ class WorldCupTeam:
 # Below code is yet to be implemented.
 class MatchResult:
 
-    def __init__(self, winning_chance):
-        self.chance = winning_chance
+    def __init__(self, team1, team2):
+        self.team1 = team1
+        self.team2 = team2
+        self.host_factor = 0
+        if team1.Name == host_nation_country or team2.Name == host_nation_country:
+            self.host_factor = host_nation_factor
+        self.get_match_result()
+
+    def get_match_result(self):
+        """
+
+        :return:
+        """
+        try:
+            if self.host_factor != 0:
+                self.team1.scoring_power = self.team1.Attacking_Strength / self.team1.Defensive_Strength
+                self.team2.scoring_power = self.team2.Attacking_Strength / self.team2.Defensive_Strength
+            else:
+                if self.team1.Name == host_nation_country:
+                    self.team1.scoring_power = (self.team1.Attacking_Strength / self.team1.Defensive_Strength) * self.host_factor
+                else:
+                    self.team1.scoring_power = self.team1.Attacking_Strength / self.team1.Defensive_Strength
+
+                if self.team2.Name == host_nation_country:
+                    self.team2.scoring_power = (self.team2.Attacking_Strength / self.team2.Defensive_Strength) * self.host_factor
+                else:
+                    self.team2.scoring_power = self.team2.Attacking_Strength / self.team2.Defensive_Strength
+
+            self.team1.goals_scored = np.random.poisson(self.team1.scoring_power)
+            self.team2.goals_scored = np.random.poisson(self.team2.scoring_power)
+
+            if self.team1.goals_scored > self.team2.goals_scored:
+                self.team1.points += 3
+                self.team1.won += 1
+                self.team2.lost += 1
+            elif self.team1.goals_scored < self.team2.goals_scored:
+                self.team2.points += 3
+                self.team2.won += 1
+                self.team1.lost += 1
+            else:
+                self.team1.points += 1
+                self.team2.points += 1
+                self.team1.drawn += 1
+                self.team2.drawn += 1
+
+            print("The score between {} and {} is {} - {}".format(self.team1.Name, self.team2.Name,
+                                                                  self.team1.goals_scored,
+                                                                  self.team2.goals_scored))
+        except(ArithmeticError):
+            print("The teams {} or {} have zero defensive strength".format(self.team1.Name, self.team2.Name))
+
+    @staticmethod
+    def result_of_group_matches(all_group_teams_list):
+        """
+
+        :param all_group_teams_list:
+        :return:
+        """
+
+        for each_combination in all_group_teams_list:
+            MatchResult(each_combination[0], each_combination[1])
 
 
 def fetch_details_for_simulating_groups() -> pd.DataFrame:
@@ -338,33 +403,57 @@ def simulate_groups(simulations: int):
         for each_team in groupA:
             print(each_team.Name)
 
+        possible_team_combinations_group_a = list(itertools.combinations(groupA, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_a)
+
         print("\n Group B")
         for each_team in groupB:
             print(each_team.Name)
+
+        possible_team_combinations_group_b = list(itertools.combinations(groupB, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_b)
 
         print("\n Group C")
         for each_team in groupC:
             print(each_team.Name)
 
+        possible_team_combinations_group_c = list(itertools.combinations(groupC, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_c)
+
         print("\n Group D")
         for each_team in groupD:
             print(each_team.Name)
+
+        possible_team_combinations_group_d = list(itertools.combinations(groupD, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_d)
 
         print("\n Group E")
         for each_team in groupE:
             print(each_team.Name)
 
+        possible_team_combinations_group_e = list(itertools.combinations(groupE, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_e)
+
         print("\n Group F")
         for each_team in groupF:
             print(each_team.Name)
+
+        possible_team_combinations_group_f = list(itertools.combinations(groupF, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_f)
 
         print("\n Group G")
         for each_team in groupG:
             print(each_team.Name)
 
+        possible_team_combinations_group_g = list(itertools.combinations(groupG, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_g)
+
         print("\n Group H")
         for each_team in groupH:
             print(each_team.Name)
+
+        possible_team_combinations_group_h = list(itertools.combinations(groupH, 2))
+        MatchResult.result_of_group_matches(possible_team_combinations_group_h)
 
     print("Success Ratio of Last Winner (that is France) is {}".format(winner_count/simulations * 100))
 
@@ -373,6 +462,7 @@ if __name__ == '__main__':
 
     qualified_teams = []
     host_nation_country = 'Qatar'
+    host_nation_factor = 1.10
     confideration = {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
