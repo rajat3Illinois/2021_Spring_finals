@@ -1,7 +1,9 @@
 """
 
-This code is developed by Rajat Kumar (rajat3@illinois.edu)
+This code is developed by Rajat Kumar (rajat3@illinois.edu) individually.
+
 The detailed description is present in the readme file. The project belongs to the category of Type 3 analysis.
+
 Change the simulations in the main part of python. Currently, it is set as 100.
 Make sure all the data sets file are in the same directory as this python file.
 The comments for the better understanding are added in the code.
@@ -31,14 +33,22 @@ def remove_regex_from_total_value(team_merged_frame: pd.DataFrame) -> pd.DataFra
     return team_merged_frame
 
 
-def host_nation_df(host: str) -> pd.DataFrame:
+def host_nation_df(host: str, players_dataframe: pd.DataFrame) -> pd.DataFrame:
     """
     This provides the details of the host nation that is Qatar right now.
     :param host:
+    :param players_dataframe:
     :return:
+    >>> players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
+    >>> host_nation_country = 'Qatar'
+    >>> host_nation_df(host_nation_country, players_df)
+        Rank Nation  Squad_Size  ...  count Normalize_Rank Above_Median_Count
+    57    58  Qatar          23  ...    0.0              0                  0
+    <BLANKLINE>
+    [1 rows x 11 columns]
     """
     overall_rankings = pd.read_csv("Latest_Rankings.csv")
-    grouped_players_df = players_df.groupby('nationality')['overall'].agg(['median', 'count'])
+    grouped_players_df = players_dataframe.groupby('nationality')['overall'].agg(['median', 'count'])
     host_nation = overall_rankings[overall_rankings['Nation'] == host]
     host_team_details = pd.merge(host_nation, grouped_players_df, left_on='Nation', right_index=True,
                                  how='left').fillna(0)
@@ -57,6 +67,7 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
 
     max_rank = player_team_merged_frame['Rank'].max()
     min_rank = player_team_merged_frame['Rank'].min()
+    # Rank is normalized as per the confideration.
     player_team_merged_frame['Normalize_Rank'] = (max_rank - player_team_merged_frame['Rank']) / \
                                                  (max_rank - min_rank)
     player_team_merged_frame['Above_Median_Count'] = player_team_merged_frame['count'] / 2
@@ -118,9 +129,12 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
 
 def fetch_team_details(team: pd.DataFrame) -> pd.DataFrame:
     """
-    It merges the particular confideration (like AFC, Asia) team dataframe with the Latest Rankings dataframe.
+    It merges the particular confideration (like AFC, Asia) team dataframe with the Latest Team Rankings dataframe.
     :param team:
     :return:
+    >>> team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
+    >>> africa_teams = pd.read_csv("AFC.csv")
+    >>> team_details = pd.merge(africa_teams, team_rankings, left_on='Nation', right_index=True, how='left')
     """
     team_details = pd.merge(team, team_rankings, left_on='Nation', right_index=True, how='left')
     return team_player_details(team_details)
@@ -128,10 +142,16 @@ def fetch_team_details(team: pd.DataFrame) -> pd.DataFrame:
 
 def team_player_details(details: pd.DataFrame) -> pd.DataFrame:
     """
-    It provides the player statistics belonging to the qualifying team as per the players_20 data file.
+    It provides the player statistics belonging to the qualifying team as per the players_20 data file i.e. players_df dataframe.
 
     :param details:
-    :return:
+    :return
+    >>> players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
+    >>> grouped_players_df = players_df.groupby('nationality')['overall'].agg(['mean', 'count'])
+    >>> team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
+    >>> africa_teams = pd.read_csv("AFC.csv")
+    >>> team_details = pd.merge(africa_teams, team_rankings, left_on='Nation', right_index=True, how='left')
+    >>> team_player_details = pd.merge(team_details, grouped_players_df, left_on='Nation', right_index=True, how='left').fillna(0)
     """
     grouped_players_df = players_df.groupby('nationality')['overall'].agg(['mean', 'count'])
     team_player_details = pd.merge(details, grouped_players_df, left_on='Nation',
@@ -174,6 +194,17 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
     It is main function that returns all the qualifying teams along with its statistics of attacking prowess,
     defensive prowess, rank and confideration.
     :return:
+    >>> africa_teams = pd.read_csv("AFC.csv")
+    >>> africa_teams.head(5)
+        Nation
+    0  Senegal
+    1  Tunisia
+    2  Nigeria
+    3  Algeria
+    4  Morocco
+    >>> players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
+    >>> host_nation_country = 'Qatar'
+    >>> host_team_data = host_nation_df(host_nation_country, players_df)
     """
 
     africa_teams = pd.read_csv("AFC.csv")
@@ -194,7 +225,7 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
     europe_teams = pd.read_csv("UEFA.csv")
     uefa_team_data = world_cup_qualified_teams(fetch_team_details(europe_teams), "UEFA")
 
-    host_team_data = host_nation_df(host_nation_country)
+    host_team_data = host_nation_df(host_nation_country, players_df)
 
     qualified_frames = [afc_team_data, asia_team_data, north_america_team_data,
                         south_america_team_data, oceania_team_data,
@@ -207,7 +238,7 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
 def qualification_count_for_host_and_defending_country(team_group: list) -> list:
     """
     This function sorts the team in a group based on their points, goal difference and goal scored in tournament.
-    It calculates the count of whether the host nation and defending champaion make it past through the group stages or not,
+    It calculates the count of whether the host nation and defending champion make it past through the group stages or not,
     This function after the match result of all the teams in a single group are calculated.
 
     :param team_group:
@@ -238,7 +269,7 @@ def qualification_count_for_host_and_defending_country(team_group: list) -> list
     return count_list
 
 
-# The below class deals with the World Cup Team
+# The below class deals with the World Cup Team.
 class WorldCupTeam:
 
     world_cup_team_stats_list = []
@@ -261,7 +292,7 @@ class WorldCupTeam:
         self.goal_against_in_tournament = 0
         self.goal_difference = 0
 
-        if self.Name == 'France':
+        if self.Name == defending_nation:
             self.last_winner = True
         else:
             self.last_winner = False
@@ -389,7 +420,7 @@ class MatchResult:
     @staticmethod
     def result_of_group_matches(all_group_teams_list):
         """
-        It is a static method, which calls the Match Result class, to estimate the result of a soccer match bwtween two teams.
+        It is a static method, which calls the Match Result class, to estimate the result of a soccer match between two teams.
         :param all_group_teams_list:
         :return:
         """
@@ -407,11 +438,12 @@ def simulate_groups(simulations: int):
     :param simulations:
     :return:
     """
-    winner_count = 0
-    host_nation_count = 0
-    defending_champion_count = 0
+    winner_count = 0  # Used for Hypothesis 1
+    host_nation_count = 0   # Used for Hypothesis 2
+    defending_champion_count = 0   # Used for Hypothesis 3
 
     for i in range(simulations):
+        # Declaring the 4 pots and 8 groups below
         pot1 = []
         pot2 = []
         pot3 = []
@@ -427,9 +459,13 @@ def simulate_groups(simulations: int):
         groupH = []
         Groups = [groupA, groupB, groupC, groupD, groupE, groupF, groupG, groupH]
 
+        # The below code determines the team that are likely to qualify for the World Cup.
+        # Teams Object Oriented Design is used in here.
+        # Team object has an attribute of Pot as well, assigned after sorting the qualified teams on the basis of rank.
         WorldCupTeam.create_team_instances(fetch_details_for_simulating_groups())
         teams_list = WorldCupTeam.world_cup_team_stats_list
 
+        # Assigning the qualified teams into the pot list according to their rank. Host nation is given pot 1.
         for each_team in teams_list:
             if each_team.pot == 1:
                 # noinspection PyUnresolvedReferences
@@ -444,6 +480,8 @@ def simulate_groups(simulations: int):
                 # noinspection PyUnresolvedReferences
                 pot4.append(each_team)
 
+        # Below codes assigns the team into Groups from the Pots.
+        # Since, France is likely to be in Pot 1 as it has  rank 3 currently, so Hypothesis one variable count increment in added in Pot 1 assignment
         random.shuffle(Groups)
 
         random.shuffle(pot1)
@@ -476,87 +514,110 @@ def simulate_groups(simulations: int):
                 pot4.remove(each_team)
                 break
 
+        # Print Group A teams
         print("\n Group A")
         for each_team in groupA:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group A.
         possible_team_combinations_group_a = list(itertools.combinations(groupA, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_a)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupA)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group B teams
         print("\n Group B")
         for each_team in groupB:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group B.
         possible_team_combinations_group_b = list(itertools.combinations(groupB, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_b)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupB)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group C teams
         print("\n Group C")
         for each_team in groupC:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group C.
         possible_team_combinations_group_c = list(itertools.combinations(groupC, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_c)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupC)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group D teams
         print("\n Group D")
         for each_team in groupD:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group D.
         possible_team_combinations_group_d = list(itertools.combinations(groupD, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_d)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupD)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group E teams
         print("\n Group E")
         for each_team in groupE:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group E.
         possible_team_combinations_group_e = list(itertools.combinations(groupE, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_e)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupE)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group F teams
         print("\n Group F")
         for each_team in groupF:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group F.
         possible_team_combinations_group_f = list(itertools.combinations(groupF, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_f)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupF)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group G teams
         print("\n Group G")
         for each_team in groupG:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group G.
         possible_team_combinations_group_g = list(itertools.combinations(groupG, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_g)
 
+        # Below code is used for the analysis of Hypothesis 2 and 3.
         count_list = qualification_count_for_host_and_defending_country(groupG)
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
+        # Print Group H teams
         print("\n Group H")
         for each_team in groupH:
             print(each_team.Name)
 
+        # Below code is used to identify the winner of the matches among the teams of group H.
         possible_team_combinations_group_h = list(itertools.combinations(groupH, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_h)
 
@@ -564,23 +625,30 @@ def simulate_groups(simulations: int):
         defending_champion_count += count_list[0]
         host_nation_count += count_list[1]
 
-    print("\nThe chances of Defending champion (that is France) qualifying for the world cup is {}".
-          format(winner_count/simulations * 100))
+    # Below are the final result percentage of all the three hypothesis.
+    print("\nResults after {} simulations".format(simulations))
 
-    print("\nThe chances of Defending champion (that is France) not bowing out from group stage after qualification is {}".
-          format(defending_champion_count / winner_count * 100))
+    print("\nThe chances of Defending champion (that is {}) qualifying for the world cup is {}".
+          format(defending_nation, winner_count/simulations * 100))
 
-    print("\nThe chances of Host Nation (that is Qatar) not bowing out from group stage is {}".
-          format(host_nation_count / simulations * 100))
+    print("\nThe chances of Defending champion (that is {}) reaching the knockout stage of World Cup is {}".
+          format(defending_nation, defending_champion_count / winner_count * 100))
+
+    print("\nThe chances of Host Nation (that is {}) reaching the knockout stage of World Cup is {}".
+          format(host_nation_country, host_nation_count / simulations * 100))
 
 
 if __name__ == '__main__':
 
     qualified_teams = []
     host_nation_country = 'Qatar'
+    defending_nation = 'France'
+    # Host nation are likely to perform 25% better (assumption) as per their normal.
     host_nation_factor = 1.25
+    # Confideration Qualifying Count Dictionary
     confideration = {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
+    # Forming the players data frame and the team ranking data frame
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(100) # One can change the simulation count from here.
+    simulate_groups(100)  # One can change the simulation count from here.
