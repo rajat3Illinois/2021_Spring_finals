@@ -2,8 +2,10 @@
 
 This code is developed by Rajat Kumar (rajat3@illinois.edu)
 The detailed description is present in the readme file. The project belongs to the category of Type 3 analysis.
-Change the simulations in the main part of python. Currently, it is set as 50.
-Make sure all the data sets file are in the same directory as this python file
+Change the simulations in the main part of python. Currently, it is set as 100.
+Make sure all the data sets file are in the same directory as this python file.
+The comments for the better understanding are added in the code.
+Go through the presentation as well for a better understanding of what this code is likely to do.
 
 
 """
@@ -47,7 +49,7 @@ def host_nation_df(host: str) -> pd.DataFrame:
 
 def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confideration_type: str) -> pd.DataFrame:
     """
-    It returns the teams that are likely to qualify for the Fifa World Cup.
+    It returns the teams that are likely to qualify for the Fifa World Cup from each confideration.
     :param player_team_merged_frame:
     :param confideration_type: (Type of confideration like AFC, Asia, North America)
     :return:
@@ -167,6 +169,76 @@ def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, p
     return officially_qualified_teams
 
 
+def fetch_details_for_simulating_groups() -> pd.DataFrame:
+    """
+    It is main function that returns all the qualifying teams along with its statistics of attacking prowess,
+    defensive prowess, rank and confideration.
+    :return:
+    """
+
+    africa_teams = pd.read_csv("AFC.csv")
+    afc_team_data = world_cup_qualified_teams(fetch_team_details(africa_teams), "AFC")
+
+    asia_teams = pd.read_csv("Asia.csv")
+    asia_team_data = world_cup_qualified_teams(fetch_team_details(asia_teams), "CAF")
+
+    north_america_teams = pd.read_csv("North_America.csv")
+    north_america_team_data = world_cup_qualified_teams(fetch_team_details(north_america_teams), "CONCACAF")
+
+    south_america_teams = pd.read_csv("South_America.csv")
+    south_america_team_data = world_cup_qualified_teams(fetch_team_details(south_america_teams), "CONMEBOL")
+
+    oceania_teams = pd.read_csv("Oceania.csv")
+    oceania_team_data = world_cup_qualified_teams(fetch_team_details(oceania_teams), "OFC")
+
+    europe_teams = pd.read_csv("UEFA.csv")
+    uefa_team_data = world_cup_qualified_teams(fetch_team_details(europe_teams), "UEFA")
+
+    host_team_data = host_nation_df(host_nation_country)
+
+    qualified_frames = [afc_team_data, asia_team_data, north_america_team_data,
+                        south_america_team_data, oceania_team_data,
+                        uefa_team_data, host_team_data]
+    world_cup_team_data = pd.concat(qualified_frames)
+    world_cup_team_stats = qualifying_team_attack_def_stats(world_cup_team_data, players_df)
+    return world_cup_team_stats
+
+
+def qualification_count_for_host_and_defending_country(team_group: list) -> list:
+    """
+    This function sorts the team in a group based on their points, goal difference and goal scored in tournament.
+    It calculates the count of whether the host nation and defending champaion make it past through the group stages or not,
+    This function after the match result of all the teams in a single group are calculated.
+
+    :param team_group:
+    :return:
+    """
+    defending_country_count = 0
+    host_country_count = 0
+    count_list = []
+
+    arranged_team = sorted(team_group, key=lambda team: (team.points, team.goal_difference, team.goal_scored_in_tournament),
+                           reverse=True)
+    loop_count = 0
+    for each_arranged_team in arranged_team:
+        loop_count += 1
+        if each_arranged_team.last_winner and loop_count < 3:
+            defending_country_count += 1
+            break
+
+        elif each_arranged_team.Name == host_nation_country and loop_count <= 2:
+            host_country_count += 1
+            break
+
+        elif loop_count > 2:
+            break
+
+    count_list.append(defending_country_count)
+    count_list.append(host_country_count)
+    return count_list
+
+
+# The below class deals with the World Cup Team
 class WorldCupTeam:
 
     world_cup_team_stats_list = []
@@ -237,7 +309,7 @@ class WorldCupTeam:
         :param team_details_df:
         :return:
         """
-
+        # To clear the existing list of teams after every simulation.
         if len(WorldCupTeam.world_cup_team_stats_list) > 0:
             WorldCupTeam.world_cup_team_stats_list.clear()
 
@@ -249,7 +321,7 @@ class WorldCupTeam:
             team_count += 1
 
 
-# Below code is yet to be implemented.
+# Below class deals with the Match Result between any two teams.
 class MatchResult:
 
     def __init__(self, team1, team2):
@@ -262,6 +334,10 @@ class MatchResult:
 
     def get_match_result(self):
         """
+        This function estimates the result of the match between two teams based on the attacking strength and defensive strength.
+        The team total rank points also plays an important role deciding the score.
+        The host nation factor is also added whose value is defined in the main function.
+        This factor also plays a major role is deciding the result of a match when a host nation is involved.
 
         :return:
         """
@@ -313,7 +389,7 @@ class MatchResult:
     @staticmethod
     def result_of_group_matches(all_group_teams_list):
         """
-
+        It is a static method, which calls the Match Result class, to estimate the result of a soccer match bwtween two teams.
         :param all_group_teams_list:
         :return:
         """
@@ -322,77 +398,12 @@ class MatchResult:
             MatchResult(each_combination[0], each_combination[1])
 
 
-def fetch_details_for_simulating_groups() -> pd.DataFrame:
-    """
-    It is main function that returns all the qualifying teams along with its statistics of attacking prowess,
-    defensive prowess, rank and confideration.
-    :return:
-    """
-
-    africa_teams = pd.read_csv("AFC.csv")
-    afc_team_data = world_cup_qualified_teams(fetch_team_details(africa_teams), "AFC")
-
-    asia_teams = pd.read_csv("Asia.csv")
-    asia_team_data = world_cup_qualified_teams(fetch_team_details(asia_teams), "CAF")
-
-    north_america_teams = pd.read_csv("North_America.csv")
-    north_america_team_data = world_cup_qualified_teams(fetch_team_details(north_america_teams), "CONCACAF")
-
-    south_america_teams = pd.read_csv("South_America.csv")
-    south_america_team_data = world_cup_qualified_teams(fetch_team_details(south_america_teams), "CONMEBOL")
-
-    oceania_teams = pd.read_csv("Oceania.csv")
-    oceania_team_data = world_cup_qualified_teams(fetch_team_details(oceania_teams), "OFC")
-
-    europe_teams = pd.read_csv("UEFA.csv")
-    uefa_team_data = world_cup_qualified_teams(fetch_team_details(europe_teams), "UEFA")
-
-    host_team_data = host_nation_df(host_nation_country)
-
-    qualified_frames = [afc_team_data, asia_team_data, north_america_team_data,
-                        south_america_team_data, oceania_team_data,
-                        uefa_team_data, host_team_data]
-    world_cup_team_data = pd.concat(qualified_frames)
-    world_cup_team_stats = qualifying_team_attack_def_stats(world_cup_team_data, players_df)
-    return world_cup_team_stats
-
-
-def qualification_count_for_host_and_defending_country(team_group: list) -> list:
-    """
-
-    :param team_group:
-    :return:
-    """
-    defending_country_count = 0
-    host_country_count = 0
-    count_list = []
-
-    arranged_team = sorted(team_group, key=lambda team: (team.points, team.goal_difference, team.goal_scored_in_tournament),
-                           reverse=True)
-    loop_count = 0
-    for each_arranged_team in arranged_team:
-        loop_count += 1
-        if each_arranged_team.last_winner and loop_count < 3:
-            defending_country_count += 1
-            break
-
-        elif each_arranged_team.Name == host_nation_country and loop_count <= 2:
-            host_country_count += 1
-            break
-
-        elif loop_count > 2:
-            break
-
-    count_list.append(defending_country_count)
-    count_list.append(host_country_count)
-    return count_list
-
-
 # noinspection PyPep8Naming
 def simulate_groups(simulations: int):
     """
     This is main simulation function that assigns the groups to its appropriate pots and then randomly
-    assign each team to the group.
+    assign each team to the group. It also estimates the match result and provides the result of whether to consider or
+    disregard the hypothesis.
     :param simulations:
     :return:
     """
@@ -567,9 +578,9 @@ if __name__ == '__main__':
 
     qualified_teams = []
     host_nation_country = 'Qatar'
-    host_nation_factor = 1.15
+    host_nation_factor = 1.25
     confideration = {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(100)
+    simulate_groups(100) # One can change the simulation count from here.
