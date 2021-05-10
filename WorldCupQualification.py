@@ -53,8 +53,8 @@ def world_cup_qualified_teams(player_team_merged_frame: pd.DataFrame, confiderat
     :return:
     """
 
-    max_rank = player_team_merged_frame.max()['Rank']
-    min_rank = player_team_merged_frame.min()['Rank']
+    max_rank = player_team_merged_frame['Rank'].max()
+    min_rank = player_team_merged_frame['Rank'].min()
     player_team_merged_frame['Normalize_Rank'] = (max_rank - player_team_merged_frame['Rank']) / \
                                                  (max_rank - min_rank)
     player_team_merged_frame['Above_Median_Count'] = player_team_merged_frame['count'] / 2
@@ -145,22 +145,22 @@ def qualifying_team_attack_def_stats(officially_qualified_teams: pd.DataFrame, p
     :param players_details_df:
     :return:
     """
-    players_df.loc[players_df['player_positions'].str.contains('ST', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('LW', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('RW', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('CAM', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('CM', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('RM', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('LM', regex=False), 'player_positions'] = 'A'
-    players_df.loc[players_df['player_positions'].str.contains('CDM', regex=False), 'player_positions'] = 'D'
-    players_df.loc[players_df['player_positions'].str.contains('CB', regex=False), 'player_positions'] = 'D'
-    players_df.loc[players_df['player_positions'].str.contains('RB', regex=False), 'player_positions'] = 'D'
-    players_df.loc[players_df['player_positions'].str.contains('LB', regex=False), 'player_positions'] = 'D'
-    players_df.loc[players_df['player_positions'].str.contains('GK', regex=False), 'player_positions'] = 'D'
-    players_df.fillna(0)
+    players_details_df.loc[players_details_df['player_positions'].str.contains('ST', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('LW', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('RW', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('CAM', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('CM', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('RM', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('LM', regex=False), 'player_positions'] = 'A'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('CDM', regex=False), 'player_positions'] = 'D'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('CB', regex=False), 'player_positions'] = 'D'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('RB', regex=False), 'player_positions'] = 'D'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('LB', regex=False), 'player_positions'] = 'D'
+    players_details_df.loc[players_details_df['player_positions'].str.contains('GK', regex=False), 'player_positions'] = 'D'
+    players_details_df.fillna(0)
 
-    final_grouped_players_df = players_df.loc[players_df['player_positions'] == 'A'].groupby('nationality')['overall'].agg(['median'])
-    final_grouped_players_df['Defensive_Prowess'] = players_df.loc[players_df['player_positions'] == 'D'].groupby('nationality')['overall'].agg(['median'])
+    final_grouped_players_df = players_details_df.loc[players_details_df['player_positions'] == 'A'].groupby('nationality')['overall'].agg(['median'])
+    final_grouped_players_df['Defensive_Prowess'] = players_details_df.loc[players_details_df['player_positions'] == 'D'].groupby('nationality')['overall'].agg(['median'])
 
     officially_qualified_teams = pd.merge(officially_qualified_teams, final_grouped_players_df, left_on='Nation',
                                           right_index=True, how='left').fillna(0)
@@ -183,8 +183,10 @@ class WorldCupTeam:
         self.won = 0
         self.lost = 0
         self.drawn = 0
-        self.goal_scored = 0
-        self.goal_against = 0
+        self.goal_scored_in_match = 0
+        self.goal_scored_in_tournament = 0
+        self.goal_against_in_match = 0
+        self.goal_against_in_tournament = 0
         self.goal_difference = 0
 
         if self.Name == 'France':
@@ -278,14 +280,14 @@ class MatchResult:
                 else:
                     self.team2.scoring_power = (self.team2.Attacking_Strength / self.team1.Defensive_Strength) * self.host_factor * (self.team2.Rank_Points / self.team1.Rank_Points)
 
-            self.team1.goals_scored = np.random.poisson(self.team1.scoring_power)
-            self.team2.goals_scored = np.random.poisson(self.team2.scoring_power)
+            self.team1.goal_scored_in_match = np.random.poisson(self.team1.scoring_power)
+            self.team2.goal_scored_in_match = np.random.poisson(self.team2.scoring_power)
 
-            if self.team1.goals_scored > self.team2.goals_scored:
+            if self.team1.goal_scored_in_match > self.team2.goal_scored_in_match:
                 self.team1.points += 3
                 self.team1.won += 1
                 self.team2.lost += 1
-            elif self.team1.goals_scored < self.team2.goals_scored:
+            elif self.team1.goal_scored_in_match < self.team2.goal_scored_in_match:
                 self.team2.points += 3
                 self.team2.won += 1
                 self.team1.lost += 1
@@ -295,16 +297,16 @@ class MatchResult:
                 self.team1.drawn += 1
                 self.team2.drawn += 1
 
-            self.team1.goal_scored += self.team1.goal_scored
-            self.team2.goal_scored += self.team2.goal_scored
-            self.team1.goal_against += self.team2.goal_scored
-            self.team2.goal_against += self.team1.goal_scored
-            self.team1.goal_difference += self.team1.goal_scored - self.team1.goal_against
-            self.team2.goal_difference += self.team2.goal_scored - self.team2.goal_against
+            self.team1.goal_scored_in_tournament += self.team1.goal_scored_in_match
+            self.team2.goal_scored_in_tournament += self.team2.goal_scored_in_match
+            self.team1.goal_against_in_tournament += self.team2.goal_scored_in_match
+            self.team2.goal_against_in_tournament += self.team1.goal_scored_in_match
+            self.team1.goal_difference = self.team1.goal_scored_in_tournament - self.team1.goal_against_in_tournament
+            self.team2.goal_difference = self.team2.goal_scored_in_tournament - self.team2.goal_against_in_tournament
 
             print("The score between {} and {} is {} - {}".format(self.team1.Name, self.team2.Name,
-                                                                  self.team1.goals_scored,
-                                                                  self.team2.goals_scored))
+                                                                  self.team1.goal_scored_in_match,
+                                                                  self.team2.goal_scored_in_match))
         except(ArithmeticError):
             print("The teams {} or {} have zero defensive strength".format(self.team1.Name, self.team2.Name))
 
@@ -355,6 +357,38 @@ def fetch_details_for_simulating_groups() -> pd.DataFrame:
     return world_cup_team_stats
 
 
+def qualification_count_for_host_and_defending_country(team_group: list) -> list:
+    """
+
+    :param team_group:
+    :return:
+    """
+    defending_country_count = 0
+    host_country_count = 0
+    count_list = []
+
+    arranged_team = sorted(team_group, key=lambda team: (team.points, team.goal_difference, team.goal_scored_in_tournament),
+                           reverse=True)
+    loop_count = 0
+    for each_arranged_team in arranged_team:
+        loop_count += 1
+        if each_arranged_team.last_winner and loop_count < 3:
+            defending_country_count += 1
+            break
+
+        elif each_arranged_team.Name == host_nation_country and loop_count <= 2:
+            host_country_count += 1
+            break
+
+        elif loop_count > 2:
+            break
+
+    count_list.append(defending_country_count)
+    count_list.append(host_country_count)
+    return count_list
+
+
+# noinspection PyPep8Naming
 def simulate_groups(simulations: int):
     """
     This is main simulation function that assigns the groups to its appropriate pots and then randomly
@@ -363,6 +397,8 @@ def simulate_groups(simulations: int):
     :return:
     """
     winner_count = 0
+    host_nation_count = 0
+    defending_champion_count = 0
 
     for i in range(simulations):
         pot1 = []
@@ -436,12 +472,20 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_a = list(itertools.combinations(groupA, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_a)
 
+        count_list = qualification_count_for_host_and_defending_country(groupA)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
+
         print("\n Group B")
         for each_team in groupB:
             print(each_team.Name)
 
         possible_team_combinations_group_b = list(itertools.combinations(groupB, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_b)
+
+        count_list = qualification_count_for_host_and_defending_country(groupB)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
 
         print("\n Group C")
         for each_team in groupC:
@@ -450,12 +494,20 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_c = list(itertools.combinations(groupC, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_c)
 
+        count_list = qualification_count_for_host_and_defending_country(groupC)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
+
         print("\n Group D")
         for each_team in groupD:
             print(each_team.Name)
 
         possible_team_combinations_group_d = list(itertools.combinations(groupD, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_d)
+
+        count_list = qualification_count_for_host_and_defending_country(groupD)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
 
         print("\n Group E")
         for each_team in groupE:
@@ -464,12 +516,20 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_e = list(itertools.combinations(groupE, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_e)
 
+        count_list = qualification_count_for_host_and_defending_country(groupE)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
+
         print("\n Group F")
         for each_team in groupF:
             print(each_team.Name)
 
         possible_team_combinations_group_f = list(itertools.combinations(groupF, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_f)
+
+        count_list = qualification_count_for_host_and_defending_country(groupF)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
 
         print("\n Group G")
         for each_team in groupG:
@@ -478,6 +538,10 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_g = list(itertools.combinations(groupG, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_g)
 
+        count_list = qualification_count_for_host_and_defending_country(groupG)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
+
         print("\n Group H")
         for each_team in groupH:
             print(each_team.Name)
@@ -485,7 +549,18 @@ def simulate_groups(simulations: int):
         possible_team_combinations_group_h = list(itertools.combinations(groupH, 2))
         MatchResult.result_of_group_matches(possible_team_combinations_group_h)
 
-    print("\nThe chances of Last Winner (that is France) qualifying for the world cup is {}".format(winner_count/simulations * 100))
+        count_list = qualification_count_for_host_and_defending_country(groupH)
+        defending_champion_count += count_list[0]
+        host_nation_count += count_list[1]
+
+    print("\nThe chances of Defending champion (that is France) qualifying for the world cup is {}".
+          format(winner_count/simulations * 100))
+
+    print("\nThe chances of Defending champion (that is France) not bowing out from group stage after qualification is {}".
+          format(defending_champion_count / winner_count * 100))
+
+    print("\nThe chances of Host Nation (that is Qatar) not bowing out from group stage is {}".
+          format(host_nation_count / simulations * 100))
 
 
 if __name__ == '__main__':
@@ -497,4 +572,4 @@ if __name__ == '__main__':
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(10)
+    simulate_groups(100)
