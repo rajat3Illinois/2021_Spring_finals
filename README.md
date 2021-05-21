@@ -41,6 +41,7 @@ Quarter-Final
 Semi-Final
 Final
 
+
 APPROACH: - 
 
 Since, we are in 2020, so we don't know have any teams that have qualified for the World Cup apart from the host nation (Qatar) who are given automatic qualification.
@@ -78,6 +79,40 @@ Group E: - Qatar, Croatia, Senegal, Morocco
 Group F: - Belgium, Chile, United States, Ghana
 Group G: - Argentina, Columbia, Poland, Saudi Arabia
 Group H: - Portugal, Netherlands, Iran, Ivory Coast
+
+
+LOOPHOLES IN THE PREVIOUS CODE :- 
+
+Since, this is a extension to the analysis of the code developed in the link  "https://github.com/hiralrayani/World-Cup-Simulator.git", so I am providing the weakness and the strengths of the previous code that are taken / disregarded in this analysis.
+
+Weakness:- 
+
+1) The previous code doesn't take into account the POT SEEDING UNDERSTANDING while making the groups of teams. (Implemented in new code).
+
+2)  It was assumed in that toss factor would be crucial in deciding the outcome of the match. (This is disregarded via computing match score).
+
+3) The team past wins and losses plays a role in the determination of team result (This is to be disregarded).
+
+4) Teams are assigned the strength and defense powers depending on the their rank. This assigning is random values from 84 to 38. (This is disregarded from the analysis).
+
+5) There is ineffective use of OOP designing approach, with the focus of making Team Pool as a seperate class. This could have easily be handled using the World Cup team easily.
+
+Strength:- 
+
+1) Use of Poseidon Approach to calculate the match result is effective. (This is implemented in this approach)
+
+REDEFINIG THE APPROACH BASED ON THE ABOVE ANALYSIS:- 
+
+Keeping in mind the above weakness, below is the better picture of the code understanding and work.
+
+1)  POT Seeding are implemented that provides a clear picture of how the world cup group actually works.
+
+2) The FIFA points of the team provides a better picture of the team performance, as they provide a better picture of there form in the last 2-3 years. The same is used in calculating the match result between two teams.
+
+3) For some teams the defensive and attacking power are randomly assigned between a  range based on their rank. With teams having ranks between 20 to 30 having power assigned randomly from 65 to 67, with team having rank betwenn 31 to 50 assigned 63 to 65 and so forth.
+
+4) Goalkeeping power are also consisder and they are allocated to the defensive power.
+
 
 IMPORTANT ASSUMPTIONS/ MODIFICATIONS WHILE DESIGNING: -
 

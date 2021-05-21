@@ -1,6 +1,9 @@
 """
 
-This code is developed by Rajat Kumar (rajat3@illinois.edu) individually.
+This code is developed taking into account the previous developed code of Spring 2018 batch Fifa World Cup
+Simulation and the necessary source code provided in the readme file.
+
+The code is referenced from the links provided in readme file.
 
 The detailed description is present in the readme file. The project belongs to the category of Type 3 analysis.
 
