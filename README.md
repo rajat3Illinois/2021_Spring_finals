@@ -32,7 +32,7 @@ UEFA (Europe)
 Only limited number of teams can qualify from a particular confederation. In other words, the number of teams from a particular confederation is pre-defined as follows: - 
 {'CAF': 4, 'AFC': 4, 'UEFA': 13, 'CONMEBOL': 5, 'CONCACAF': 4, 'OFC': 1}
 
-Although there is playoff among few teams of different confederation, but our analysis would be based, by keeping in mind this confederation wise number.
+Although there is playoff among few teams of different confederation, but our analysis would be overlook that scenario and determine the qualified teams by keeping in mind the above confederation wise number.
 
 As per the rules the Tournament Format is as follow: - 
 Group Stages (32 teams split into 8 groups)
@@ -44,25 +44,26 @@ Final
 
 APPROACH: - 
 
-Since, we are in 2020, so we don't know have any teams that have qualified for the World Cup apart from the host nation (Qatar) who are given automatic qualification.
-Below are the checkpoints of this whole implementation.
+Currently, we are not aware of any teams that have qualified for the World Cup apart from the host nation (Qatar) who are given automatic qualification.
 
-1) Compute the 31 teams that are likely to qualify for the World Cup, with Qatar given the automatic qualification.
+Below checkpoints are identified in order to identify the qualified teams.
+
+1) Compute the remaining 31 teams that are likely to qualify for the World Cup, with Qatar given the automatic qualification.
 2) Keeping in mind the number of teams likely to qualify from a particular confederation, we will predict the remaining 31 teams.
-3) The team’s qualification will depend on its rank, avg attacking strength, avg defensive strength (includes goalkeeper strength), players median rating in the dataset player_20.csv, players total value (market rate value). 
+3) The teams qualification will depend on its rank, avg attacking strength, avg defensive strength (includes goalkeeper strength), players median rating in the dataset player_20.csv, players total value (market rate value). 
 4) After obtaining the entire 32 teams, we will split the teams into groups.
 5) For making the group teams, pots seeding technique is used. The same is explained below: - 
 
 POTS SEEDING UNDERSTANDING: - 
 
 1) In order to compute the group of teams, there are 4 POTS identified (of 8 teams each), wherein all the qualified teams are put in as per their world ranking.
-2) For example, if there is no 1 ranked team (i.e., Belgium right now) as one of the team that qualified to World Cup, then it is put in Pot 1.  Once, Pot 1 is filled, the filling of Pot 2 is undertaken. This process till all the 4 Pots are filled.
+2) For example, if there is no 1 ranked team (i.e., Belgium right now) as one of the team that qualified fpr World Cup, then it is put in Pot 1.  Once, teams in Pot 1 are filled, the filling of Pot 2 is undertaken. This process till all the 4 Pots are filled.
 
 NOTE: - The host nation as per the rules are automatically assigned Pot1.
 
 3) Once the pots are filled, the 8 groups are randomly constructed, with each group having a team from every Pot. No two teams from a single pot can belong to the same group.
 For example, Belgium and Qatar can't be in the same group.
-4) For better understanding, there is sample POTS and Groups created from these Pots mentioned below: - 
+4) For better understanding, below is an example of one sample POTS and Groups during one of the simulation: - 
 
 Pot 1: - Qatar, Belgium, Spain, Argentina, Portugal, England, France, Brazil
 Pot 2: - Mexico, Italy, Croatia, Uruguay, Germany, Netherlands, Columbia, Chile
@@ -111,7 +112,7 @@ Keeping in mind the above weakness, below is the better picture of the code unde
 
 3) For some teams the defensive and attacking power are randomly assigned between a  range based on their rank. With teams having ranks between 20 to 30 having power assigned randomly from 65 to 67, with team having rank betwenn 31 to 50 assigned 63 to 65 and so forth.
 
-4) Goalkeeping power are also consisder and they are allocated to the defensive power.
+4) Goalkeeping power are also consisdered and they are allocated to the defensive power.
 
 
 IMPORTANT ASSUMPTIONS/ MODIFICATIONS WHILE DESIGNING: -
@@ -129,7 +130,7 @@ The UEFA team have a grad from 1 to 6 as per their ranking. Thus, it is assumed 
 
 6) The count of player above the median rating plays an important role in qualification.
 
-7) The total market value combined of all the players of a team has an impact on team’s qualification.
+7) The total market value combined of all the players of a team has an impact on teams qualification.
 
 8) For certain teams as well as host nation (Qatar), attacking prowess and defensive prowess are randomly added based on their ranking.
 
@@ -206,7 +207,7 @@ Execute the WorlCupQualification.py file for the results.
 The simulation count can be changed provided in the main clause of python file.
 One can change the simulation count in the main call of the python file.
 Make sure all the data files are in the same directory as the python file.
-There is Jupyter notebook in the repository that is completely used for testing purpose. It doesn’t provide any analysis of this project.
+There is Jupyter notebook in the repository that is completely used for testing purpose. It doesn√ït provide any analysis of this project.
 
 REFERENCES: -
 
