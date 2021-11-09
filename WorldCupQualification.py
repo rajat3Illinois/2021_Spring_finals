@@ -635,7 +635,7 @@ def simulate_groups(simulations: int):
           format(defending_nation, winner_count/simulations * 100))
 
     print("\nThe chances of Defending champion (that is {}) reaching the knockout stage of World Cup is {}".
-          format(defending_nation, defending_champion_count / winner_count * 100))
+          format(defending_nation, round(defending_champion_count/winner_count * 100, 2)))
 
     print("\nThe chances of Host Nation (that is {}) reaching the knockout stage of World Cup is {}".
           format(host_nation_country, host_nation_count / simulations * 100))
@@ -654,4 +654,4 @@ if __name__ == '__main__':
     players_df = pd.read_csv("players_20.csv", index_col="sofifa_id")
     team_rankings = pd.read_csv("Latest_Rankings.csv", index_col='Nation')
 
-    simulate_groups(100)  # One can change the simulation count from here.
+    simulate_groups(50)  # One can change the simulation count from here.
